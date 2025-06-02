@@ -1,0 +1,100 @@
+@font-face {
+  font-family: 'Sacred Letter';
+  src: url(font.ttf);
+  font-weight: initial;
+  font-style: normal;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  font-family: "Lato", sans-serif;
+}
+
+h2 {
+  font-size: 10rem;
+  font-weight: bold;
+  padding: 1rem;
+  text-align: center;
+  font-family: 'Sacred Letter';
+}
+
+h4 {
+  font-size: 1rem;
+  font-weight: bold;
+  color: white;
+  text-align: center;
+  opacity: 25%;
+  display: grid;
+}
+
+.coming-soon {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+  background-image: url("./images/example1.jpg");
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  color: white;
+}
+
+.countdown {
+  display: flex;
+  justify-content: space-around;
+  text-align: center;
+  margin-bottom: 40%;
+}
+
+.day,
+.hour,
+.minute,
+.second {
+  font-size: 3rem;
+}
+
+.waiting {
+  height: 50vh;
+}
+
+footer {
+  text-align: center;
+}
+
+@media screen and (max-width: 768px) {
+  .coming-soon {
+    background-size: cover;
+    background-position: center;
+  }
+
+  h2 {
+    font-size: 5rem;
+  }
+
+  .countdown {
+    flex-wrap: wrap;
+    gap: 1rem; /* Añade espacio entre los elementos */
+    margin-bottom: 20%; /* Puedes ajustar esto también */
+  }
+
+  .day,
+  .hour,
+  .minute,
+  .second {
+    font-size: 2.2rem; /* Ajusta si quieres más legibilidad */
+    min-width: 70px;   /* Opcional: fuerza ancho mínimo para separar */
+  }
+  footer {
+    font-size: 13px;
+  }
+}
