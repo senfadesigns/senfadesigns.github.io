@@ -42,7 +42,7 @@ h4 {
   align-items: center;
   flex-direction: column;
   justify-content: center;
-  background-image: url("example1.jpg");
+  background-image: url("./images/example1.jpg");
   background-repeat: no-repeat;
   background-size: cover;
   background-position: center;
@@ -69,6 +69,22 @@ h4 {
 
 footer {
   text-align: center;
+}
+
+.social-icons {
+  margin-top: 10px;
+}
+
+.social-icons a {
+  color: white;
+  margin: 0 10px;
+  font-size: 1.8rem;
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.social-icons a:hover {
+  color: #FFD700; /* Amarillo dorado */
 }
 
 @media screen and (max-width: 768px) {
