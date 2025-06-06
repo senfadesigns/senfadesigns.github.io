@@ -1,5 +1,4 @@
 const countdown = () => {
-  // Specify the date and time we are counting down to.
   const countDate = new Date("Jun 27, 2025 00:00:00").getTime();
   const now = new Date().getTime();
   const remainingTime = countDate - now;
@@ -20,5 +19,26 @@ const countdown = () => {
   document.querySelector(".second").innerText = textSecond > 0 ? textSecond : 0;
 };
 
-// should use 500 as setInterval won't always run on time.
 setInterval(countdown, 500);
+
+// 🔊 Reproductor de canción aleatoria
+window.addEventListener('DOMContentLoaded', () => {
+  const songs = [
+    'preview1.mp3',
+    'preview2.mp3',
+    'preview3.mp3',
+    'preview5.mp3',
+    'preview6.mp3',
+  ];
+
+  const randomSong = songs[Math.floor(Math.random() * songs.length)];
+  const audioElement = document.getElementById('randomAudio');
+
+  if (audioElement) {
+    audioElement.src = randomSong;
+    audioElement.load();
+    audioElement.play().catch(e => {
+      // Autoplay puede estar bloqueado; no mostramos error en consola
+    });
+  }
+});
