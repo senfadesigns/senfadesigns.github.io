@@ -1,636 +1,694 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>IA - BBY CAPO</title>
-  <style>
-    :root { 
-        --green: #00ff88; 
-        --neon: #00ff00; 
-    }
-    
-    * { 
-        box-sizing: border-box; 
-    }
-    
-    body { 
-        margin: 0; 
-        background: #000; 
-        color: var(--neon); 
-        font-family: 'Courier New', monospace; 
-        overflow: hidden; 
-        position: relative;
-        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><text x="0" y="8" font-family="monospace" font-size="10" fill="%2300ff00" opacity=".05">01</text></svg>');
-        animation: rain 2s linear infinite;
-    }
-    
-    @keyframes rain {
-        from { background-position: 0 0; }
-        to { background-position: 0 100%; }
-    }
-    
-    #container { 
-        display: flex; 
-        height: 100vh; 
-        position: relative; 
-        z-index: 10;
-    }
-    
-    #sidebar {
-      width: 300px; 
-      padding: 20px; 
-      /* La imagen de fondo ahora se maneja dentro de un pseudoelemento */
-      background: rgba(0, 255, 0, 0.08);
-      border-right: 2px solid var(--neon); 
-      overflow-y: auto;
-      backdrop-filter: blur(4px);
-      box-shadow: 2px 0 15px rgba(0, 255, 0, 0.4);
-      position: relative; /* Esencial para el pseudoelemento */
-    }
-    
-    /* Pseudoelemento para la imagen de fondo con superposición verde */
-    #sidebar::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-image: url('image1.jpeg'); /* REEMPLAZA ESTO CON LA URL DE TU IMAGEN */
-      background-size: cover;
-      background-position: center;
-      opacity: 0.2; /* Opacidad de la imagen */
-      z-index: -1;
-    }
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Matrix 3D Audio Visualizer — Enhanced</title>
+    <style>
+        :root {
+            --green: #00ff88;
+            --neon: #00ff00;
+        }
 
-    /* Superposición de color verde sobre la imagen */
-    #sidebar::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 255, 0, 0.1); /* Tonalidad verde semitransparente */
-        z-index: -1;
-    }
+        * {
+            box-sizing: border-box;
+        }
 
-    #sidebar h2 { 
-        margin: 0 0 12px; 
-        text-align: center; 
-        text-shadow: 0 0 10px var(--neon); 
-    }
-    
-    #sidebar p { 
-        margin: 10px 0; 
-        display: flex; 
-        align-items: center; 
-    }
-    
-    #sidebar p strong { 
-        flex: 0 0 100px; 
-    }
-    
-    /* ESTILOS PARA EL BOTÓN DE CARGA */
-    #custom-file-upload {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 10px 0;
-      width: 100%;
-      color: var(--neon);
-      background: #000;
-      border: 1px solid var(--neon);
-      padding: 10px;
-      cursor: pointer;
-      border-radius: 10px;
-      box-shadow: 0 0 8px rgba(0, 255, 0, 0.2) inset;
-      transition: all 0.3s ease;
-    }
-    
-    #custom-file-upload:hover {
-      background: rgba(0, 255, 0, 0.15);
-      box-shadow: 0 0 15px rgba(0, 255, 0, 0.4) inset, 0 0 15px rgba(0, 255, 0, 0.4);
-    }
-    
-    .loading .text {
-        animation: text-pulse 1s linear infinite;
-    }
+        body {
+            margin: 0;
+            background: #000;
+            color: var(--neon);
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            position: relative;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><text x="0" y="8" font-family="monospace" font-size="10" fill="%2300ff00" opacity=".05">01</text></svg>');
+            animation: rain 2s linear infinite;
+        }
 
-    @keyframes text-pulse {
-      0% { opacity: 1; }
-      50% { opacity: 0.5; }
-      100% { opacity: 1; }
-    }
-    
-    #play-pause {
-      margin: 10px 0; 
-      width: 100%; 
-      color: var(--neon); 
-      background: #000; 
-      border: 1px solid var(--neon);
-      padding: 10px; 
-      cursor: pointer; 
-      border-radius: 10px; 
-      box-shadow: 0 0 8px rgba(0,255,0,.2) inset;
-      font-family: 'Courier New', monospace;
-      transition: all 0.3s ease;
-    }
-    
-    #play-pause:hover {
-        background: rgba(0, 255, 0, 0.15);
-        box-shadow: 0 0 15px rgba(0, 255, 0, 0.4) inset;
-    }
-    
-    #play-pause[disabled] { 
-        opacity: .5; 
-        cursor: not-allowed; 
-        background: #000;
-        box-shadow: 0 0 8px rgba(0, 255, 0, 0.2) inset;
-    }
-    
-    #canvas-container { 
-        flex: 1; 
-        position: relative; 
-    }
-    
-    /* Efectos de Glitch y Neon */
-    .glitch-effect {
-      position: relative;
-      display: inline-block;
-      text-shadow: 0 0 8px var(--neon);
-    }
-    
-    .glitching::before,
-    .glitching::after {
-      content: attr(data-text);
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      color: var(--neon);
-      text-shadow: 0 0 8px var(--neon);
-    }
-    
-    .glitching::before {
-      left: 2px;
-      text-shadow: -2px 0 var(--green);
-      animation: glitch-anim-1 0.5s linear infinite alternate-reverse;
-    }
-    
-    .glitching::after {
-      left: -2px;
-      text-shadow: 2px 0 #00ffff;
-      animation: glitch-anim-2 0.5s linear infinite alternate-reverse;
-    }
-    
-    @keyframes glitch-anim-1 {
-      0% { transform: translate(0, 0); }
-      20% { transform: translate(-2px, 2px); }
-      40% { transform: translate(1px, -1px); }
-      60% { transform: translate(0, 3px); }
-      80% { transform: translate(-2px, -2px); }
-      100% { transform: translate(1px, 1px); }
-    }
-    
-    @keyframes glitch-anim-2 {
-      0% { transform: translate(0, 0); }
-      20% { transform: translate(2px, -2px); }
-      40% { transform: translate(-1px, 1px); }
-      60% { transform: translate(0, -3px); }
-      80% { transform: translate(2px, 2px); }
-      100% { transform: translate(-1px, -1px); }
-    }
-    
-    .neon-glow {
-      animation: glow-anim 1.5s ease-in-out infinite alternate;
-      text-shadow: 0 0 5px var(--neon), 0 0 10px var(--neon);
-    }
+        @keyframes rain {
+            from { background-position: 0 0; }
+            to { background-position: 0 100%; }
+        }
 
-    @keyframes glow-anim {
-      from { text-shadow: 0 0 5px var(--neon), 0 0 10px var(--neon); }
-      to { text-shadow: 0 0 20px var(--neon), 0 0 30px var(--neon), 0 0 40px var(--neon); }
-    }
-    
-    /* Barras de estado */
-    .status-bar-container {
-      flex: 1;
-      height: 12px;
-      background-color: rgba(0, 255, 0, 0.1);
-      border: 1px solid var(--neon);
-      border-radius: 5px;
-      position: relative;
-      overflow: hidden;
-      margin-left: 10px;
-      box-shadow: 0 0 5px rgba(0, 255, 0, 0.4);
-    }
-    
-    .progress-bar {
-      height: 100%;
-      background-color: var(--neon);
-      width: 0%;
-      transition: width 0.1s linear;
-      box-shadow: 0 0 5px rgba(0, 255, 0, 0.8);
-    }
+        #container {
+            display: flex;
+            height: 100vh;
+            position: relative;
+            z-index: 10;
+        }
 
-    #progress-bar-container {
-        margin-top: 20px;
-        margin-bottom: 20px;
-        transition: visibility 0.5s;
-    }
-    
-    .loading-bars {
-      height: 100%;
-      display: flex;
-      align-items: center;
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-    }
-    
-    .loading-bar {
-      flex: 1;
-      height: 40%;
-      background: var(--neon);
-      margin: 0 2px;
-      animation: loading-bar-anim 1.5s ease-in-out infinite;
-    }
-    
-    .loading-bar:nth-child(2) { animation-delay: 0.2s; }
-    .loading-bar:nth-child(3) { animation-delay: 0.4s; }
-    
-    @keyframes loading-bar-anim {
-      0%, 100% { transform: scaleY(1); }
-      50% { transform: scaleY(2); }
-    }
-  </style>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.10.0/p5.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.10.0/addons/p5.sound.min.js"></script>
+        #sidebar {
+            width: 300px;
+            padding: 20px;
+            background: rgba(0, 255, 0, 0.08);
+            border-right: 2px solid var(--neon);
+            overflow-y: auto;
+            backdrop-filter: blur(4px);
+            box-shadow: 2px 0 15px rgba(0, 255, 0, 0.4);
+            position: relative;
+        }
+
+        #sidebar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('image1.jpeg');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.2;
+            z-index: -1;
+        }
+
+        #sidebar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 255, 0, 0.1);
+            z-index: -1;
+        }
+
+        #sidebar h2 {
+            margin: 0 0 12px;
+            text-align: center;
+            text-shadow: 0 0 10px var(--neon);
+        }
+
+        #sidebar p {
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+        }
+
+        #sidebar p strong {
+            flex: 0 0 100px;
+        }
+
+        #custom-file-upload {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 10px 0;
+            width: 100%;
+            color: var(--neon);
+            background: #000;
+            border: 1px solid var(--neon);
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 10px;
+            box-shadow: 0 0 8px rgba(0, 255, 0, 0.2) inset;
+            transition: all 0.3s ease;
+        }
+
+        #custom-file-upload:hover {
+            background: rgba(0, 255, 0, 0.15);
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.4) inset, 0 0 15px rgba(0, 255, 0, 0.4);
+        }
+
+        .loading .text {
+            animation: text-pulse 1s linear infinite;
+        }
+
+        @keyframes text-pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        #play-pause {
+            margin: 10px 0;
+            width: 100%;
+            color: var(--neon);
+            background: #000;
+            border: 1px solid var(--neon);
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 10px;
+            box-shadow: 0 0 8px rgba(0,255,0,.2) inset;
+            font-family: 'Courier New', monospace;
+            transition: all 0.3s ease;
+        }
+
+        #play-pause:hover {
+            background: rgba(0, 255, 0, 0.15);
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.4) inset;
+        }
+
+        #play-pause[disabled] {
+            opacity: .5;
+            cursor: not-allowed;
+            background: #000;
+            box-shadow: 0 0 8px rgba(0, 255, 0, 0.2) inset;
+        }
+
+        #canvas-container {
+            flex: 1;
+            position: relative;
+        }
+
+        .glitch-effect {
+            position: relative;
+            display: inline-block;
+            text-shadow: 0 0 8px var(--neon);
+        }
+
+        .glitching::before,
+        .glitching::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            color: var(--neon);
+            text-shadow: 0 0 8px var(--neon);
+        }
+
+        .glitching::before {
+            left: 2px;
+            text-shadow: -2px 0 var(--green);
+            animation: glitch-anim-1 0.5s linear infinite alternate-reverse;
+        }
+
+        .glitching::after {
+            left: -2px;
+            text-shadow: 2px 0 #00ffff;
+            animation: glitch-anim-2 0.5s linear infinite alternate-reverse;
+        }
+
+        @keyframes glitch-anim-1 {
+            0% { transform: translate(0, 0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(1px, -1px); }
+            60% { transform: translate(0, 3px); }
+            80% { transform: translate(-2px, -2px); }
+            100% { transform: translate(1px, 1px); }
+        }
+
+        @keyframes glitch-anim-2 {
+            0% { transform: translate(0, 0); }
+            20% { transform: translate(2px, -2px); }
+            40% { transform: translate(-1px, 1px); }
+            60% { transform: translate(0, -3px); }
+            80% { transform: translate(2px, 2px); }
+            100% { transform: translate(-1px, -1px); }
+        }
+
+        .neon-glow {
+            animation: glow-anim 1.5s ease-in-out infinite alternate;
+            text-shadow: 0 0 5px var(--neon), 0 0 10px var(--neon);
+        }
+
+        @keyframes glow-anim {
+            from { text-shadow: 0 0 5px var(--neon), 0 0 10px var(--neon); }
+            to { text-shadow: 0 0 20px var(--neon), 0 0 30px var(--neon), 0 0 40px var(--neon); }
+        }
+
+        .status-bar-container {
+            flex: 1;
+            height: 12px;
+            background-color: rgba(0, 255, 0, 0.1);
+            border: 1px solid var(--neon);
+            border-radius: 5px;
+            position: relative;
+            overflow: hidden;
+            margin-left: 10px;
+            box-shadow: 0 0 5px rgba(0, 255, 0, 0.4);
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: var(--neon);
+            width: 0%;
+            transition: width 0.1s linear;
+            box-shadow: 0 0 5px rgba(0, 255, 0, 0.8);
+        }
+
+        #progress-bar-container {
+            margin-top: 20px;
+            margin-bottom: 20px;
+            transition: visibility 0.5s;
+        }
+
+        .loading-bars {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+        }
+
+        .loading-bar {
+            flex: 1;
+            height: 40%;
+            background: var(--neon);
+            margin: 0 2px;
+            animation: loading-bar-anim 1.5s ease-in-out infinite;
+        }
+
+        .loading-bar:nth-child(2) { animation-delay: 0.2s; }
+        .loading-bar:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes loading-bar-anim {
+            0%, 100% { transform: scaleY(1); }
+            50% { transform: scaleY(2); }
+        }
+
+        /* NUEVO: Oculta el mensaje por defecto en ordenadores */
+        #desktop-only-message {
+            display: none;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
+            font-size: 1.5em; /* Ajusta el tamaño del texto para que se vea bien */
+        }
+        
+        /* --- MEDIA QUERIES PARA DISPOSITIVOS MÓVILES Y TABLETS --- */
+        @media (max-width: 768px) {
+            /* OCULTA el reproductor y el sidebar en pantallas pequeñas */
+            #container {
+                display: none;
+            }
+
+            /* MUESTRA el mensaje de "solo para ordenador" */
+            #desktop-only-message {
+                display: flex;
+            }
+            
+            /* Eliminadas las reglas de layout para #container ya que ahora está oculto */
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.10.0/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.10.0/addons/p5.sound.min.js"></script>
 </head>
 <body>
-  <div id="container">
-    <div id="sidebar">
-      <h2><span class="neon-glow">IA - BBY CAPO</span></h2>
-      <div id="custom-file-upload">
-        <span class="text">Seleccionar archivo de audio</span>
-      </div>
-      <input type="file" id="file-input" accept="audio/*" style="display: none;" />
-      <button id="play-pause" disabled>Reproducir</button>
-      
-      <p>
-        <strong class="glitch-effect" data-text="Nombre:">Nombre:</strong> 
-        <span id="file-name">No seleccionado</span>
-      </p>
-      
-      <p>
-        <strong class="glitch-effect" data-text="Duración:">Duración:</strong> 
-        <span id="duration">0:00</span>
-      </p>
-      
-      <div id="progress-bar-container" class="status-bar-container">
-        <div class="progress-bar"></div>
-      </div>
-      
-      <p>
-        <strong class="glitch-effect" data-text="Decibelios:">Decibelios:</strong>
-        <span id="decibels-display">0 dB</span>
-      </p>
-      
-      <p id="loading-status" style="display: none;">
-        <strong class="glitch-effect" data-text="Estado:">Estado:</strong>
-        <div class="status-bar-container">
-            <div class="loading-bars">
-                <div class="loading-bar"></div>
-                <div class="loading-bar"></div>
-                <div class="loading-bar"></div>
-            </div>
-        </div>
-      </p>
+    <div id="desktop-only-message">
+        <h2 class="neon-glow">Solo se puede acceder al reproductor desde un ordenador</h2>
     </div>
-    <div id="canvas-container"></div>
-  </div>
 
-  <script>
-    // ======= Script para la animación de glitch intermitente =======
-    function startGlitchEffect() {
-      const glitchElements = document.querySelectorAll('.glitch-effect');
-      
-      glitchElements.forEach(el => {
-        el.setAttribute('data-text', el.textContent);
-        
-        const triggerGlitch = () => {
-          el.classList.add('glitching');
-          setTimeout(() => {
-            el.classList.remove('glitching');
-            const nextGlitchTime = Math.random() * (8000 - 3000) + 3000;
-            setTimeout(triggerGlitch, nextGlitchTime);
-          }, 1000); 
-        };
-        
-        const initialDelay = Math.random() * 5000;
-        setTimeout(triggerGlitch, initialDelay);
-      });
-    }
+    <div id="container">
+        <div id="sidebar">
+            <h2><span class="neon-glow">IA - BBY CAPO</span></h2>
+            <div id="custom-file-upload">
+                <span class="text">Seleccionar archivo de audio</span>
+            </div>
+            <input type="file" id="file-input" accept="audio/*" style="display: none;" />
+            <button id="play-pause" disabled>Reproducir</button>
 
-    document.addEventListener('DOMContentLoaded', startGlitchEffect);
-    
-    // ======= Estado principal =======
-    let audio = null;
-    let fft = null, amplitude = null;
-    let isPlaying = false;
+            <p>
+                <strong class="glitch-effect" data-text="Nombre:">Nombre:</strong>
+                <span id="file-name">No seleccionado</span>
+            </p>
 
-    // Cámara / interacción
-    let rotX = -0.5, rotY = 0.8, targetRotX = rotX, targetRotY = rotY;
-    let zoom = 600, targetZoom = zoom;
+            <p>
+                <strong class="glitch-effect" data-text="Duración:">Duración:</strong>
+                <span id="duration">0:00</span>
+            </p>
 
-    const rotationSpeed = 0.002;
+            <div id="progress-bar-container" class="status-bar-container">
+                <div class="progress-bar"></div>
+            </div>
 
-    const matrixDrops = [];
-    const DROP_COUNT = 400;
+            <p>
+                <strong class="glitch-effect" data-text="Decibelios:">Decibelios:</strong>
+                <span id="decibels-display">0 dB</span>
+            </p>
 
-    const floatingTexts = ["BBY CAPO", "EL NENE DE ORO", "IA"];
-    let floatingText = null;
-    const textInterval = 300; 
+            <p id="loading-status" style="display: none;">
+                <strong class="glitch-effect" data-text="Estado:">Estado:</strong>
+                <div class="status-bar-container">
+                    <div class="loading-bars">
+                        <div class="loading-bar"></div>
+                        <div class="loading-bar"></div>
+                        <div class="loading-bar"></div>
+                    </div>
+                </div>
+            </p>
+        </div>
+        <div id="canvas-container"></div>
+    </div>
 
-    const BINS = 128;
+    <script>
+        // ======= Script para la animación de glitch intermitente =======
+        function startGlitchEffect() {
+            const glitchElements = document.querySelectorAll('.glitch-effect');
 
-    const fileInput = document.getElementById('file-input');
-    const playBtn = document.getElementById('play-pause');
-    const customFileUpload = document.getElementById('custom-file-upload');
-    const uploadText = customFileUpload.querySelector('.text');
-    const decibelsDisplay = document.getElementById('decibels-display');
-    const progressBar = document.querySelector('.progress-bar');
-    const progressBarContainer = document.getElementById('progress-bar-container');
-    
-    // Variables para el efecto glitch en 3D
-    let isGlitching = false;
-    let glitchTimer = 0;
-    const glitchDuration = 5; // Duración del glitch en frames
-    const glitchFrequency = 180; // Frecuencia del glitch en frames (cada 3 segundos aprox)
+            glitchElements.forEach(el => {
+                el.setAttribute('data-text', el.textContent);
 
-    function setup() {
-      const w = windowWidth - 300;
-      const h = windowHeight;
-      const cnv = createCanvas(w, h, WEBGL);
-      cnv.parent('canvas-container');
-      pixelDensity(1);
+                const triggerGlitch = () => {
+                    el.classList.add('glitching');
+                    setTimeout(() => {
+                        el.classList.remove('glitching');
+                        const nextGlitchTime = Math.random() * (8000 - 3000) + 3000;
+                        setTimeout(triggerGlitch, nextGlitchTime);
+                    }, 1000);
+                };
 
-      fft = new p5.FFT(0.85, BINS);
-      amplitude = new p5.Amplitude();
+                const initialDelay = Math.random() * 5000;
+                setTimeout(triggerGlitch, initialDelay);
+            });
+        }
 
-      for (let i = 0; i < DROP_COUNT; i++) {
-        const r = max(width, height) * random(0.8, 1.6);
-        const a = random(TWO_PI);
-        matrixDrops.push({ x: r * cos(a), z: r * sin(a), y: random(-800, 800), speed: random(1.5, 6) });
-      }
+        document.addEventListener('DOMContentLoaded', startGlitchEffect);
 
-      cnv.elt.addEventListener('wheel', (e) => {
-        targetZoom = constrain(targetZoom + (e.deltaY > 0 ? 40 : -40), 260, 1600);
-      }, { passive: true });
+        // ======= Estado principal =======
+        let audio = null;
+        let fft = null, amplitude = null;
+        let isPlaying = false;
 
-      cnv.elt.addEventListener('dblclick', () => {
-        targetRotX = -0.5; targetRotY = 0.8; targetZoom = 600;
-      });
+        // Cámara / interacción
+        let rotX = -0.5, rotY = 0.8, targetRotX = rotX, targetRotY = rotY;
+        let zoom = 600, targetZoom = zoom;
 
-      fileInput.addEventListener('change', onFileSelected);
-      playBtn.addEventListener('click', onPlayPauseClicked);
-      customFileUpload.addEventListener('click', () => { fileInput.click(); });
-    }
+        const rotationSpeed = 0.002;
 
-    function formatDuration(sec) {
-      if (!isFinite(sec) || sec <= 0) return '0:00';
-      const m = Math.floor(sec / 60);
-      const s = Math.floor(sec % 60).toString().padStart(2, '0');
-      return `${m}:${s}`;
-    }
+        const matrixDrops = [];
+        const DROP_COUNT = 400;
 
-    async function onFileSelected(e) {
-      const f = e.target.files[0];
-      if (!f) {
-        document.getElementById('file-name').textContent = 'No seleccionado';
-        playBtn.disabled = true;
-        return;
-      }
+        const floatingTexts = ["BBY CAPO", "EL NENE DE ORO", "IA"];
+        let floatingText = null;
+        const textInterval = 300;
 
-      document.getElementById('file-name').textContent = f.name;
-      document.getElementById('duration').textContent = '...';
-      playBtn.disabled = true;
-      playBtn.textContent = 'Cargando...';
-      
-      customFileUpload.classList.add('loading');
-      uploadText.textContent = 'Cargando...';
-      
-      if (audio) {
-        try { audio.stop(); audio.disconnect(); } catch (err) {}
-        audio = null; isPlaying = false; playBtn.textContent = 'Cargando...';
-      }
+        const BINS = 128;
 
-      try { const ctx = getAudioContext(); if (ctx.state === 'suspended') await ctx.resume(); } catch (err) { console.warn('No se pudo reanudar contexto automáticamente:', err); }
+        const fileInput = document.getElementById('file-input');
+        const playBtn = document.getElementById('play-pause');
+        const customFileUpload = document.getElementById('custom-file-upload');
+        const uploadText = customFileUpload.querySelector('.text');
+        const decibelsDisplay = document.getElementById('decibels-display');
+        const progressBar = document.querySelector('.progress-bar');
+        const progressBarContainer = document.getElementById('progress-bar-container');
 
-      const blobUrl = URL.createObjectURL(f);
-      try {
-        loadSound(blobUrl,
-          (loadedSound) => {
-            audio = loadedSound;
-            try { audio.onended(() => { isPlaying = false; playBtn.textContent = 'Reproducir'; }); } catch (_) {}
-            try { document.getElementById('duration').textContent = formatDuration(audio.duration()); } catch (_) { document.getElementById('duration').textContent = '0:00'; }
-            playBtn.disabled = false;
-            playBtn.textContent = 'Reproducir';
-            customFileUpload.classList.remove('loading');
-            uploadText.textContent = 'Archivo cargado';
-            try { URL.revokeObjectURL(blobUrl); } catch (_) {}
-          },
-          (err) => {
-            console.error('Error al cargar audio:', err);
-            alert('No se pudo cargar el audio. Usa un archivo MP3, WAV u OGG válido.');
+        // Variables para el efecto glitch en 3D
+        let isGlitching = false;
+        let glitchTimer = 0;
+        const glitchDuration = 5; // Duración del glitch en frames
+        const glitchFrequency = 180; // Frecuencia del glitch en frames (cada 3 segundos aprox)
+
+        function setup() {
+            // Se ajusta el tamaño del canvas de manera dinámica según el tamaño de la ventana
+            const w = window.innerWidth <= 768 ? window.innerWidth : window.innerWidth - 300;
+            const h = window.innerHeight <= 768 ? window.innerHeight * 0.5 : window.innerHeight;
+            const cnv = createCanvas(w, h, WEBGL);
+            cnv.parent('canvas-container');
+            pixelDensity(1);
+
+            fft = new p5.FFT(0.85, BINS);
+            amplitude = new p5.Amplitude();
+
+            for (let i = 0; i < DROP_COUNT; i++) {
+                const r = max(width, height) * random(0.8, 1.6);
+                const a = random(TWO_PI);
+                matrixDrops.push({ x: r * cos(a), z: r * sin(a), y: random(-800, 800), speed: random(1.5, 6) });
+            }
+
+            cnv.elt.addEventListener('wheel', (e) => {
+                targetZoom = constrain(targetZoom + (e.deltaY > 0 ? 40 : -40), 260, 1600);
+            }, { passive: true });
+
+            cnv.elt.addEventListener('dblclick', () => {
+                targetRotX = -0.5; targetRotY = 0.8; targetZoom = 600;
+            });
+
+            fileInput.addEventListener('change', onFileSelected);
+            playBtn.addEventListener('click', onPlayPauseClicked);
+            customFileUpload.addEventListener('click', () => { fileInput.click(); });
+
+            // Event listener para interacciones táctiles
+            cnv.elt.addEventListener('touchstart', onTouchStart, { passive: false });
+            cnv.elt.addEventListener('touchmove', onTouchMove, { passive: false });
+            cnv.elt.addEventListener('touchend', onTouchEnd);
+        }
+
+        let touchStartX = 0, touchStartY = 0;
+        function onTouchStart(e) {
+            if (e.touches.length === 1) {
+                dragging = true;
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+                e.preventDefault();
+            }
+        }
+
+        function onTouchMove(e) {
+            if (!dragging || e.touches.length !== 1) return;
+            const dx = e.touches[0].clientX - touchStartX;
+            const dy = e.touches[0].clientY - touchStartY;
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+            targetRotY += dx * 0.005;
+            targetRotX += dy * 0.005;
+            targetRotX = constrain(targetRotX, -PI / 2, PI / 2);
+            e.preventDefault();
+        }
+
+        function onTouchEnd() {
+            dragging = false;
+        }
+
+        function formatDuration(sec) {
+            if (!isFinite(sec) || sec <= 0) return '0:00';
+            const m = Math.floor(sec / 60);
+            const s = Math.floor(sec % 60).toString().padStart(2, '0');
+            return `${m}:${s}`;
+        }
+
+        async function onFileSelected(e) {
+            const f = e.target.files[0];
+            if (!f) {
+                document.getElementById('file-name').textContent = 'No seleccionado';
+                playBtn.disabled = true;
+                return;
+            }
+
+            document.getElementById('file-name').textContent = f.name;
+            document.getElementById('duration').textContent = '...';
             playBtn.disabled = true;
-            playBtn.textContent = 'Reproducir';
-            customFileUpload.classList.remove('loading');
-            uploadText.textContent = 'Seleccionar archivo de audio';
-            try { URL.revokeObjectURL(blobUrl); } catch (_) {}
-          }
-        );
-      } catch (err) {
-        console.error('Excepción al llamar a loadSound:', err);
-        alert('Error al procesar el archivo de audio.');
-        playBtn.disabled = true;
-        playBtn.textContent = 'Reproducir';
-        customFileUpload.classList.remove('loading');
-        uploadText.textContent = 'Seleccionar archivo de audio';
-        try { URL.revokeObjectURL(blobUrl); } catch (_) {}
-      }
-    }
+            playBtn.textContent = 'Cargando...';
 
-    async function onPlayPauseClicked() {
-      if (!audio) { alert('El audio todavía está cargando o no se ha cargado. Espera unos segundos y vuelve a intentarlo.'); return; }
-      try { const ctx = getAudioContext(); if (ctx.state === 'suspended') await ctx.resume(); } catch (err) { console.warn('No se pudo reanudar contexto:', err); }
-      try {
-        if (isPlaying) {
-          audio.pause(); isPlaying = false; playBtn.textContent = 'Reproducir';
-        } else {
-          audio.play(); isPlaying = true; playBtn.textContent = 'Pausar';
+            customFileUpload.classList.add('loading');
+            uploadText.textContent = 'Cargando...';
+
+            if (audio) {
+                try { audio.stop(); audio.disconnect(); } catch (err) {}
+                audio = null; isPlaying = false; playBtn.textContent = 'Cargando...';
+            }
+
+            try { const ctx = getAudioContext(); if (ctx.state === 'suspended') await ctx.resume(); } catch (err) { console.warn('No se pudo reanudar contexto automáticamente:', err); }
+
+            const blobUrl = URL.createObjectURL(f);
+            try {
+                loadSound(blobUrl,
+                    (loadedSound) => {
+                        audio = loadedSound;
+                        try { audio.onended(() => { isPlaying = false; playBtn.textContent = 'Reproducir'; }); } catch (_) {}
+                        try { document.getElementById('duration').textContent = formatDuration(audio.duration()); } catch (_) { document.getElementById('duration').textContent = '0:00'; }
+                        playBtn.disabled = false;
+                        playBtn.textContent = 'Reproducir';
+                        customFileUpload.classList.remove('loading');
+                        uploadText.textContent = 'Archivo cargado';
+                        try { URL.revokeObjectURL(blobUrl); } catch (_) {}
+                    },
+                    (err) => {
+                        console.error('Error al cargar audio:', err);
+                        alert('No se pudo cargar el audio. Usa un archivo MP3, WAV u OGG válido.');
+                        playBtn.disabled = true;
+                        playBtn.textContent = 'Reproducir';
+                        customFileUpload.classList.remove('loading');
+                        uploadText.textContent = 'Seleccionar archivo de audio';
+                        try { URL.revokeObjectURL(blobUrl); } catch (_) {}
+                    }
+                );
+            } catch (err) {
+                console.error('Excepción al llamar a loadSound:', err);
+                alert('Error al procesar el archivo de audio.');
+                playBtn.disabled = true;
+                playBtn.textContent = 'Reproducir';
+                customFileUpload.classList.remove('loading');
+                uploadText.textContent = 'Seleccionar archivo de audio';
+                try { URL.revokeObjectURL(blobUrl); } catch (_) {}
+            }
         }
-      } catch (err) {
-        console.error('Error al reproducir/pausar:', err);
-        alert('No se pudo reproducir el audio. Intenta con otro archivo o navegador.');
-        isPlaying = false; playBtn.textContent = 'Reproducir';
-      }
-    }
 
-    // ======= Dibujo 3D =======
-    let dragging = false, pmx = 0, pmy = 0;
-    function mousePressed() { if (mouseX > -width/2 && mouseX < width/2 && mouseY > -height/2 && mouseY < height/2) { dragging = true; pmx = mouseX; pmy = mouseY; } }
-    function mouseReleased() { dragging = false; }
-    function mouseDragged() { if (!dragging) return; const dx = mouseX - pmx; const dy = mouseY - pmy; pmx = mouseX; pmy = mouseY; targetRotY += dx * 0.005; targetRotX += dy * 0.005; targetRotX = constrain(targetRotX, -PI/2, PI/2); }
-
-    function draw() {
-      // Rotación automática
-      if (!dragging) {
-        targetRotY += rotationSpeed;
-      }
-
-      rotX = lerp(rotX, targetRotX, 0.15);
-      rotY = lerp(rotY, targetRotY, 0.15);
-      zoom = lerp(zoom, targetZoom, 0.2);
-      
-      // Controla el efecto glitch
-      if (frameCount % glitchFrequency === 0) {
-          isGlitching = true;
-          glitchTimer = glitchDuration;
-      }
-      
-      if (isGlitching) {
-          background(random(20), random(50), random(20)); // Parpadeo de fondo
-          glitchTimer--;
-          if (glitchTimer <= 0) {
-              isGlitching = false;
-          }
-      } else {
-          background(0); // Fondo normal
-      }
-      
-      push();
-      translate(0, 0, -zoom);
-      
-      // Aplica el efecto glitch a la cámara
-      if (isGlitching) {
-          let glitchX = random(-5, 5);
-          let glitchY = random(-5, 5);
-          let glitchZ = random(-5, 5);
-          translate(glitchX, glitchY, glitchZ);
-          rotateX(rotX + random(-0.02, 0.02)); 
-          rotateY(rotY + random(-0.02, 0.02));
-      } else {
-          rotateX(rotX); 
-          rotateY(rotY);
-      }
-
-      ambientLight(40);
-      directionalLight(0, 255, 120, 0.3, -0.4, -1);
-      pointLight(0, 255, 0, 0, -200, 300);
-      
-      // Lluvia de partículas Matrix
-      push(); noStroke();
-      for (const d of matrixDrops) {
-        d.y += d.speed; 
-        if (d.y > 900) {
-          d.y = -900;
+        async function onPlayPauseClicked() {
+            if (!audio) { alert('El audio todavía está cargando o no se ha cargado. Espera unos segundos y vuelve a intentarlo.'); return; }
+            try { const ctx = getAudioContext(); if (ctx.state === 'suspended') await ctx.resume(); } catch (err) { console.warn('No se pudo reanudar contexto:', err); }
+            try {
+                if (isPlaying) {
+                    audio.pause(); isPlaying = false; playBtn.textContent = 'Reproducir';
+                } else {
+                    audio.play(); isPlaying = true; playBtn.textContent = 'Pausar';
+                }
+            } catch (err) {
+                console.error('Error al reproducir/pausar:', err);
+                alert('No se pudo reproducir el audio. Intenta con otro archivo o navegador.');
+                isPlaying = false; playBtn.textContent = 'Reproducir';
+            }
         }
-        push(); 
-        translate(d.x, d.y, d.z); 
-        ambientMaterial(0, 120, 0); 
-        box(2, 60, 2); 
-        pop();
-      }
-      pop();
 
-      // Espectro de audio 3D
-      let spectrum = new Array(BINS).fill(0);
-      try { 
-          if (audio && (isPlaying || (audio.isPlaying && audio.isPlaying()))) {
-              spectrum = fft.analyze(); 
-          }
-      } catch (err) { 
-          spectrum = new Array(BINS).fill(0); 
-      }
-      
-      const ringR = min(width, height) * 0.28;
-      const barW = (TWO_PI * ringR) / BINS * 0.7;
-      const maxH = min(width, height) * 0.6;
-      
-      for (let i = 0; i < BINS; i++) {
-        const a = i / BINS * TWO_PI;
-        const mag = spectrum[i] || 0;
-        const h = map(Math.sqrt(mag / 255), 0, 1, 8, maxH);
-        const x = ringR * cos(a); 
-        const z = ringR * sin(a);
-        
-        push(); 
-        translate(x, 0, z); 
-        rotateY(a);
-        noStroke(); 
-        ambientMaterial(0, 80, 0); 
-        box(barW, 6, barW);
-        push(); 
-        translate(0, -h/2, 0); 
-        specularMaterial(0, 255, 120); 
-        shininess(60); 
-        box(barW, h, barW); 
-        pop();
-        pop();
-      }
-      
-      push(); 
-      noFill(); 
-      stroke(0,255,120,120);
-      for (let r = ringR * 0.6; r <= ringR * 1.1; r += ringR * 0.25) {
-        beginShape();
-        for (let t = 0; t <= TWO_PI + 0.05; t += 0.1) {
-            vertex(r * cos(t), 2, r * sin(t));
+        // ======= Dibujo 3D =======
+        let dragging = false, pmx = 0, pmy = 0;
+        function mousePressed() {
+            // Solo activar el arrastre si el clic está dentro del canvas
+            if (mouseX > 0 && mouseX < width && mouseY > 0 && mouseY < height) {
+                dragging = true;
+                pmx = mouseX;
+                pmy = mouseY;
+            }
         }
-        endShape();
-      }
-      
-      noStroke(); 
-      ambientMaterial(0, 40, 0); 
-      translate(0,4,0); 
-      torus(ringR * 0.5, 6, 64, 16);
-      pop();
-      pop();
-      
-      // Información de estado y UI
-      push(); 
-      resetMatrix(); 
-      translate(-width/2, -height/2, 0); 
-      noStroke(); 
-      fill(0,255,120); 
-      textSize(14); 
-      text('Matrix 3D Visualizer', 16, 24); 
-      pop();
-      
-      const decibelsValue = document.getElementById('decibels-display');
-      if (audio && isPlaying) {
-        const level = amplitude.getLevel();
-        const db = level > 0 ? 20 * Math.log10(level / 0.00002) : -100;
-        decibelsValue.textContent = isFinite(db) ? db.toFixed(2) + ' dB' : '0 dB';
+        function mouseReleased() { dragging = false; }
+        function mouseDragged() { if (!dragging) return; const dx = mouseX - pmx; const dy = mouseY - pmy; pmx = mouseX; pmy = mouseY; targetRotY += dx * 0.005; targetRotX += dy * 0.005; targetRotX = constrain(targetRotX, -PI/2, PI/2); }
 
-        const progress = (audio.currentTime() / audio.duration()) * 100;
-        progressBar.style.width = `${progress}%`;
-        progressBarContainer.style.visibility = 'visible';
-      } else {
-        progressBarContainer.style.visibility = 'hidden';
-        progressBar.style.width = '0%';
-        decibelsValue.textContent = '0 dB';
-      }
-    }
+        function draw() {
+            if (!dragging) {
+                targetRotY += rotationSpeed;
+            }
 
-    function windowResized() { 
-        resizeCanvas(windowWidth - 300, windowHeight); 
-    }
-  </script>
+            rotX = lerp(rotX, targetRotX, 0.15);
+            rotY = lerp(rotY, targetRotY, 0.15);
+            zoom = lerp(zoom, targetZoom, 0.2);
+
+            if (frameCount % glitchFrequency === 0) {
+                isGlitching = true;
+                glitchTimer = glitchDuration;
+            }
+
+            if (isGlitching) {
+                background(random(20), random(50), random(20));
+                glitchTimer--;
+                if (glitchTimer <= 0) {
+                    isGlitching = false;
+                }
+            } else {
+                background(0);
+            }
+
+            push();
+            translate(0, 0, -zoom);
+
+            if (isGlitching) {
+                let glitchX = random(-5, 5);
+                let glitchY = random(-5, 5);
+                let glitchZ = random(-5, 5);
+                translate(glitchX, glitchY, glitchZ);
+                rotateX(rotX + random(-0.02, 0.02));
+                rotateY(rotY + random(-0.02, 0.02));
+            } else {
+                rotateX(rotX);
+                rotateY(rotY);
+            }
+
+            ambientLight(40);
+            directionalLight(0, 255, 120, 0.3, -0.4, -1);
+            pointLight(0, 255, 0, 0, -200, 300);
+
+            push(); noStroke();
+            for (const d of matrixDrops) {
+                d.y += d.speed;
+                if (d.y > 900) {
+                    d.y = -900;
+                }
+                push();
+                translate(d.x, d.y, d.z);
+                ambientMaterial(0, 120, 0);
+                box(2, 60, 2);
+                pop();
+            }
+            pop();
+
+            let spectrum = new Array(BINS).fill(0);
+            try {
+                if (audio && (isPlaying || (audio.isPlaying && audio.isPlaying()))) {
+                    spectrum = fft.analyze();
+                }
+            } catch (err) {
+                spectrum = new Array(BINS).fill(0);
+            }
+
+            const ringR = min(width, height) * 0.28;
+            const barW = (TWO_PI * ringR) / BINS * 0.7;
+            const maxH = min(width, height) * 0.6;
+
+            for (let i = 0; i < BINS; i++) {
+                const a = i / BINS * TWO_PI;
+                const mag = spectrum[i] || 0;
+                const h = map(Math.sqrt(mag / 255), 0, 1, 8, maxH);
+                const x = ringR * cos(a);
+                const z = ringR * sin(a);
+
+                push();
+                translate(x, 0, z);
+                rotateY(a);
+                noStroke();
+                ambientMaterial(0, 80, 0);
+                box(barW, 6, barW);
+                push();
+                translate(0, -h/2, 0);
+                specularMaterial(0, 255, 120);
+                shininess(60);
+                box(barW, h, barW);
+                pop();
+                pop();
+            }
+
+            push();
+            noFill();
+            stroke(0,255,120,120);
+            for (let r = ringR * 0.6; r <= ringR * 1.1; r += ringR * 0.25) {
+                beginShape();
+                for (let t = 0; t <= TWO_PI + 0.05; t += 0.1) {
+                    vertex(r * cos(t), 2, r * sin(t));
+                }
+                endShape();
+            }
+
+            noStroke();
+            ambientMaterial(0, 40, 0);
+            translate(0,4,0);
+            torus(ringR * 0.5, 6, 64, 16);
+            pop();
+            pop();
+
+            push();
+            resetMatrix();
+            translate(-width/2, -height/2, 0);
+            noStroke();
+            fill(0,255,120);
+            textSize(14);
+            text('Matrix 3D Visualizer', 16, 24);
+            pop();
+
+            const decibelsValue = document.getElementById('decibels-display');
+            if (audio && isPlaying) {
+                const level = amplitude.getLevel();
+                const db = level > 0 ? 20 * Math.log10(level / 0.00002) : -100;
+                decibelsValue.textContent = isFinite(db) ? db.toFixed(2) + ' dB' : '0 dB';
+
+                const progress = (audio.currentTime() / audio.duration()) * 100;
+                progressBar.style.width = `${progress}%`;
+                progressBarContainer.style.visibility = 'visible';
+            } else {
+                progressBarContainer.style.visibility = 'hidden';
+                progressBar.style.width = '0%';
+                decibelsValue.textContent = '0 dB';
+            }
+        }
+
+        function windowResized() {
+            const w = window.innerWidth <= 768 ? window.innerWidth : window.innerWidth - 300;
+            const h = window.innerHeight <= 768 ? window.innerHeight * 0.5 : window.innerHeight;
+            resizeCanvas(w, h);
+        }
+    </script>
 </body>
 </html>
